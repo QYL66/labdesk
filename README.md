@@ -1,29 +1,101 @@
-<!-- LabDesk project documentation. -->
-# LabDesk｜实验室资料问答与设备预约
+# LabDesk 实验室助手
 
-LabDesk 用于查询校内实验室资料和预约设备。登录后可以查阅操作规程和安全须知，从答案打开引用的原文，也可以查看设备空闲时段、确认预约并查询自己的预约记录。
+**查实验规程、核对原文、预约设备。**
 
-[使用流程](#使用流程) · [本机启动](#本机启动) · [请求如何流转](#请求如何流转) · [验证结果](#验证结果)
+LabDesk 面向校内实验室。学生可以查设备操作规程和安全须知，从答案打开原文，也可以查设备空闲时段，在确认后提交预约。管理员可以上传资料、查看分块进度、管理成员和检查操作记录。
 
-| 在哪里 | 可以做什么 |
+[界面预览](#界面预览) · [核心功能](#核心功能) · [系统流程](#系统流程) · [本机启动](#本机启动) · [演示与验收](#演示与验收) · [目录结构](#目录结构)
+
+## 界面预览
+
+![LabDesk 实验室工作台，包含资料问答、查询空闲时段和查询我的预约三个入口](docs/images/labdesk-workbench.webp)
+
+<details>
+<summary>查看登录与资料问答界面</summary>
+
+**登录页**
+
+![LabDesk 实验室登录页](docs/images/labdesk-login.webp)
+
+**资料问答**
+
+![LabDesk 资料问答页面，提供设备操作规程、实验室安全须知和设备预约规则示例](docs/images/labdesk-knowledge.webp)
+
+</details>
+
+截图使用本地演示账户和模拟数据。
+
+## 核心功能
+
+### 资料入库与可追溯问答
+
+- 原始文档保存在 RustFS。开始分块后，后端通过 RocketMQ 投递任务，消费者解析文档、计算向量，再写入 PostgreSQL/pgvector。
+- 资料问答先检索相关片段，再通过 SSE 逐步显示答案。回答完成后可以展开来源，打开对应的原始文档核对。
+
+### 设备预约与人工确认
+
+- Agent 可以通过 MCP 查询某天的空闲时段和当前用户的预约。提交预约前，界面展示设备、日期和时段，用户确认后才执行写入。
+- MCP 工具从服务端会话获取用户身份。预约只接受北京时间 `09:00` 到 `17:00` 的整点起始时间，每段一小时。
+
+| MCP 工具 | 用途 |
 | --- | --- |
-| **资料问答** | 根据实验室文档回答问题，流式显示结果，点击来源查看原文。 |
-| **实验室助手** | 查询设备空闲时段，核对预约确认卡，查看个人预约编号。 |
-| **管理后台** | 上传资料、检查分块状态、管理成员和查看操作记录。 |
+| `lab_list_availability` | 按日期查询空闲时段，可指定设备。 |
+| `lab_book_equipment` | 确认后为当前用户提交预约。 |
+| `lab_list_my_bookings` | 查询当前用户的预约记录和编号。 |
 
-## 使用流程
+### 重复提交与并发冲突
 
-1. 管理员上传实验室资料，等待文档完成分块和向量入库。项目附有[设备操作规程、安全须知和预约规则](resources/labdesk-demo)三份虚构样例。
-2. 进入「资料问答」，试问“教学显微镜用完后要贴什么颜色的复位卡？”。回答会逐步显示，可以点开来源核对原文。
-3. 进入「实验室助手」，查询指定日期和设备的空闲时段。选择一个时段后，在确认卡上核对设备、日期和时间。预约成功后可在同一入口查询预约编号。
+PostgreSQL 对「设备 + 起始时间」施加唯一约束。两人抢同一个时段时，先写入的一方成功，另一方收到时段已占用的提示。同一账户重复提交同一时段会得到原预约编号。预约保存在数据库，项目停止后可随原数据卷恢复。
 
-预约按北京时间处理，每段一小时，起始时间为 `09:00` 到 `17:00` 的整点。用样例演示时可以查询教学显微镜 `SCOPE-01`、电子测量台 `BENCH-02` 或桌面 3D 打印机 `PRINT-03`。
+## 系统流程
 
-[完整演示与验收步骤](docs/labdesk-demo.md)
+```mermaid
+flowchart LR
+    Admin["管理后台"] -->|上传原文| Store["RustFS"]
+    Admin -->|开始分块| Queue["RocketMQ"]
+    Queue --> Worker["解析、分块与向量化"]
+    Store -->|读取原文| Worker
+    Worker --> DB["PostgreSQL / pgvector"]
+
+    User["实验室用户"] --> QA["资料问答"]
+    DB -->|检索相关片段| QA
+    QA -->|SSE 答案与来源| User
+
+    User --> Agent["实验室助手"]
+    Agent -->|写入前确认| Confirm["用户确认"]
+    Confirm --> MCP["设备预约 MCP"]
+    Agent -->|查空闲或查我的预约| MCP
+    MCP -->|读写预约记录| DB
+```
+
+[源码导读与断点位置](docs/labdesk-guide.md)
+
+## 技术栈
+
+| 层次 | 技术 | 用途 |
+| --- | --- | --- |
+| 前端 | React、TypeScript、Vite | 实验室工作台、文档预览、流式对话与确认卡 |
+| 后端 | Java 17、Spring Boot、MyBatis-Plus | 账号鉴权、知识库、文档处理、SSE 接口 |
+| Agent 与模型 | AgentScope、MCP、DeepSeek、阿里云百炼 | 对话推理、工具调用与文本向量化 |
+| 数据与中间件 | PostgreSQL、pgvector、Redis、RocketMQ、RustFS | 预约持久化、向量检索、登录状态、异步任务、原文存储 |
+| 本机部署 | Docker Compose、PowerShell | 编排中间件、初始化数据库、启停 LabDesk |
 
 ## 本机启动
 
-Windows 环境需要 JDK 17、Node.js 22.12 或更新版本、Maven 和 Docker Desktop。首次下载只取 `main` 分支的最新提交。
+### 1. 准备环境
+
+| 组件 | 要求 |
+| --- | --- |
+| 系统 | Windows，启动和停止使用 PowerShell 脚本或双击入口 |
+| Java | JDK 17，可通过 `java -version` 检查 |
+| 前端 | Node.js 22.12 或更新版本，可通过 `node --version` 检查 |
+| 构建 | Maven，可通过 `mvn.cmd -v` 检查 |
+| 中间件 | Docker Desktop 已启动 Linux 引擎，可通过 `docker compose version` 检查 |
+| 模型 | 准备 DeepSeek 和阿里云百炼 API Key，启动时在本机输入 |
+
+### 2. 下载并构建
+
+在 PowerShell 运行以下命令。克隆只取 `main` 的最新提交。
 
 ```powershell
 git clone --depth 1 --single-branch --branch main https://github.com/QYL66/labdesk.git
@@ -34,51 +106,59 @@ npm.cmd ci
 Pop-Location
 ```
 
-1. 启动 Docker Desktop，确认本机已有 `pgvector/pgvector:pg16`、`redis:8.4-alpine`、`rustfs/rustfs:1.0.0-alpha.72` 和 `apache/rocketmq:5.2.0`。中间件的本地凭据由启动脚本生成。
-2. 双击 [启动 LabDesk](local/Start-LabDesk.cmd)。首次启动时设置至少 12 个字符的管理员密码，然后在窗口按提示输入 DeepSeek 和阿里云百炼 Key。
-3. 用 `admin` 登录 [本机 LabDesk](http://127.0.0.1:15173/)，再双击 [导入演示资料](local/Import-LabDeskDemo.cmd)。脚本创建 `LabDeskDemo` 知识库，导入样例并检查分块状态。
-4. 双击 [停止 LabDesk](local/Stop-LabDesk.cmd)。下次启动继续使用原有数据卷。
+### 3. 启动和登录
 
-前端监听 `15173`，Java 后端监听 `9090`，MCP 监听 `9099`。Compose 中间件端口为 PostgreSQL `5432`、Redis `16379`、RustFS `9000/9001` 和 RocketMQ `19876/10909/10911`，均绑定本机。Windows 脚本优先使用 PATH 上的 Docker CLI，可用 `LABDESK_DOCKER_EXE` 指定其他位置。用 IntelliJ IDEA 打开项目时，导入根目录的 [pom.xml](pom.xml) 即可。
+启动脚本使用本机 Docker 镜像。首次运行前，若本机缺少镜像，可用 `docker pull <镜像>` 拉取下表对应版本。
 
-## 请求如何流转
-
-```mermaid
-flowchart TB
-    UI["React 用户界面"] --> API["Spring Boot 后端"]
-    API -->|资料上传| FILES["RustFS 保存原文"]
-    API -->|分块任务| MQ["RocketMQ"]
-    MQ --> INGEST["解析、分块与向量化"]
-    INGEST --> SEARCH["PostgreSQL / pgvector"]
-    API -->|资料问答| SEARCH
-    API -->|预约意图| AGENT["Agent · 查询与用户确认"]
-    AGENT --> MCP["MCP 设备工具"]
-    MCP --> BOOK["PostgreSQL 预约表"]
-```
-
-- **资料入库**。后端把原始文档存入 RustFS，经 RocketMQ 投递分块任务。消费者解析文档、计算向量，再写入 PostgreSQL/pgvector。
-- **资料问答**。后端检索相关片段，用 SSE 推送答案并返回来源。前端用来源信息打开文档预览。
-- **设备预约**。Agent 通过 MCP 查空闲、提交预约和查询个人记录。提交前需要确认，工具从服务端会话取得用户身份。PostgreSQL 用设备和起始时间的唯一约束裁决并发。同一账户重复提交同一预约时返回原编号，其他账户提交相同时段会收到已占用提示。
-
-| 预约工具 | 操作 |
+| 服务 | 镜像 |
 | --- | --- |
-| `lab_list_availability` | 按日期查询空闲时段，可指定设备。 |
-| `lab_book_equipment` | 确认后为当前用户预约一个整点时段。 |
-| `lab_list_my_bookings` | 查询当前用户的预约记录。 |
+| PostgreSQL + pgvector | `pgvector/pgvector:pg16` |
+| Redis | `redis:8.4-alpine` |
+| RustFS | `rustfs/rustfs:1.0.0-alpha.72` |
+| RocketMQ | `apache/rocketmq:5.2.0` |
 
-[源码导读与断点位置](docs/labdesk-guide.md)
+1. 双击 [启动 LabDesk](local/Start-LabDesk.cmd)。首次启动时设置至少 12 个字符的管理员密码。每次启动后端时，按窗口提示输入两把模型 Key。
+2. 打开 [本机工作台](http://127.0.0.1:15173/) 后，用 `admin` 和刚设置的密码登录。
+3. 双击 [导入演示资料](local/Import-LabDeskDemo.cmd)。脚本创建 `LabDeskDemo` 知识库、导入三份虚构文档并检查分块状态。
+4. 用完后双击 [停止 LabDesk](local/Stop-LabDesk.cmd)。数据库和对象存储数据保存在 `labdesk-local` 的 Compose 数据卷中。
 
-## 运行数据
+### 常见问题
 
-数据库和对象存储使用独立的 `labdesk-local` Compose 数据卷。管理员密码以加盐哈希保存，模型 Key 在启动时通过进程环境传给后端。连接云模型时，提问和检索到的资料片段会发送给模型服务。演示请使用随附的虚构资料。本地配置、日志和数据文件留在本机。
-
-## 验证结果
-
-| 检查项 | 结果 |
+| 现象 | 检查位置 |
 | --- | --- |
-| 构建与回归 | 前后端构建通过。94 项后端测试、31 项前端测试通过，覆盖 MCP 目录和身份传递、预约参数校验、确认事件和会话回放。 |
-| 依赖审计 | 2026-11-14 的 npm 审计和对可执行 JAR 依赖的 OSV 查询均无匹配告警。 |
-| 本机联调 | 资料入库、在线问答、预约抢占和重启保留需在运行后验收。 |
+| 提示缺少构建产物 | 在根目录完成 Maven 打包，在 `frontend/` 完成 `npm.cmd ci`。 |
+| 提示 Docker 引擎不可用 | 启动 Docker Desktop 并等待 Linux 引擎就绪。Docker CLI 路径也可用 `LABDESK_DOCKER_EXE` 指定。 |
+| 脚本提示端口占用 | 检查提示中的端口，尤其是前端 `15173`、后端 `9090` 和 MCP `9099`。中间件端口见 [Compose 配置](local/compose.yaml)。 |
+| 问答或分块失败 | 查看 `local/logs/` 中对应服务的日志。确认模型 Key 可用、网络可达、目标知识库已有分块成功的资料。 |
+
+模型 Key 通过本地进程环境传递。调用云模型时，提问和召回的资料片段会发送给对应模型服务。演示可使用项目随附的虚构资料。
+
+## 演示与验收
+
+| 场景 | 操作 | 核对结果 |
+| --- | --- | --- |
+| 资料问答 | 进入「资料问答」，问“教学显微镜用完后要贴什么颜色的复位卡？” | 答案给出“青绿色”，可以展开来源并对照《设备操作规程》。 |
+| 查看空闲 | 在「实验室助手」查询未来某天的 `SCOPE-01`。 | 返回设备、房间和可预约整点。 |
+| 设备预约 | 从空闲列表选一个整点，发起预约并在卡片中确认。 | 获得预约编号，可在「查询我的预约」中找到。 |
+| 冲突与重试 | 用两个账号预约同一时段，或用同一账号重试。 | 另一账号收到已占用提示，同一账号重试返回原编号。 |
+
+[样例资料](resources/labdesk-demo) · [完整演示与验收步骤](docs/labdesk-demo.md)
+
+2026-11-14 已核验前后端构建、前端类型检查、38 项前端回归、78 项后端定向测试，以及 PowerShell 和 Compose 配置。用真实模型 Key 完成资料入库、在线问答、两人抢占和重启保留的端到端验收仍待实测。
+
+## 目录结构
+
+| 路径 | 内容 |
+| --- | --- |
+| [`frontend/`](frontend) | 登录、资料问答、预约交互与管理后台 |
+| [`bootstrap/`](bootstrap) | Spring Boot 应用入口与默认配置 |
+| [`rag/`](rag) | 知识库、分块、检索、来源整理与流式问答 |
+| [`agent/`](agent) | Agent 对话、MCP 调用、确认与流式事件 |
+| [`mcp-server/`](mcp-server) | 日期与预约工具、设备数据及预约表 |
+| [`system/`](system)、[`framework/`](framework)、[`infra-ai/`](infra-ai) | 账号和业务管理、通用基础能力、模型服务适配 |
+| [`local/`](local) | Windows 启停、演示导入和 Compose 配置 |
+| [`resources/`](resources) | 初始化 SQL、数据库迁移与演示资料 |
+| [`docs/`](docs) | 源码导读、演示步骤和界面截图 |
 
 ## 开源许可
 
