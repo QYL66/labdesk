@@ -38,17 +38,20 @@ scripts/logs/
 node_modules/
 dist/
 .vite/
+.env
+!frontend/.env
 .env.local
 .env.*.local
-local/.env
 local/maven-settings.xml
-resources/docker/graphrag/.env
 
 ### Tmp Out ###
 .output/
 docs/temp
 local/logs/
-build-labdesk.log
+*.log
+*.bundle
+.DS_Store
+Thumbs.db
 .claude/
 
 ### Frontend build outputs ###
