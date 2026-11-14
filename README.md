@@ -39,7 +39,7 @@ Pop-Location
 3. 用 `admin` 登录 [本机 LabDesk](http://127.0.0.1:15173/)，再双击 [导入演示资料](local/Import-LabDeskDemo.cmd)。脚本创建 `LabDeskDemo` 知识库，导入样例并检查分块状态。
 4. 双击 [停止 LabDesk](local/Stop-LabDesk.cmd)。下次启动继续使用原有数据卷。
 
-前端监听 `15173`，Java 后端监听 `9090`，MCP 监听 `9099`。Compose 中间件端口为 PostgreSQL `5432`、Redis `16379`、RustFS `9000/9001` 和 RocketMQ `19876/10909/10911`，均绑定本机。Windows 脚本优先使用 PATH 上的 Docker CLI，可用 `LABDESK_DOCKER_EXE` 指定其他位置。本机 Maven 缓存配置见 [local/maven-settings.xml](local/maven-settings.xml)。
+前端监听 `15173`，Java 后端监听 `9090`，MCP 监听 `9099`。Compose 中间件端口为 PostgreSQL `5432`、Redis `16379`、RustFS `9000/9001` 和 RocketMQ `19876/10909/10911`，均绑定本机。Windows 脚本优先使用 PATH 上的 Docker CLI，可用 `LABDESK_DOCKER_EXE` 指定其他位置。用 IntelliJ IDEA 打开项目时，导入根目录的 [pom.xml](pom.xml) 即可。
 
 ## 请求如何流转
 

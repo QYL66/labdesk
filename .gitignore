@@ -15,10 +15,7 @@ temp
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
-!.idea/dictionaries/
-!.idea/inspectionProfiles/
-!.idea/scopes/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -44,6 +41,7 @@ dist/
 .env.local
 .env.*.local
 local/.env
+local/maven-settings.xml
 resources/docker/graphrag/.env
 
 ### Tmp Out ###
