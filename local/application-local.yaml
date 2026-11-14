@@ -1,0 +1,28 @@
+server:
+  address: 127.0.0.1
+
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/labdesk?client_encoding=UTF8
+    password: ${RAGENT_PG_PASSWORD}
+  data:
+    redis:
+      port: 16379
+      password: ${RAGENT_REDIS_PASSWORD}
+
+agent:
+  mcp:
+    servers:
+      - name: labdesk
+        url: http://127.0.0.1:9099
+        lab-desk-token: ${LABDESK_MCP_TOKEN}
+
+rag:
+  storage:
+    s3:
+      endpoint: http://127.0.0.1:9000
+      access-key: ${RAGENT_S3_KEY}
+      secret-key: ${RAGENT_S3_SECRET}
+
+rocketmq:
+  name-server: 127.0.0.1:19876

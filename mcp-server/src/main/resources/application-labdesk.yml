@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/labdesk?client_encoding=UTF8
+    username: postgres
+    password: ${RAGENT_PG_PASSWORD}
+
+labdesk:
+  mcp-token: ${LABDESK_MCP_TOKEN}

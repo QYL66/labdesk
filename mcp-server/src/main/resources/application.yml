@@ -1,0 +1,8 @@
+# Modified for LabDesk.
+server:
+  address: 127.0.0.1
+  port: 9099
+
+spring:
+  application:
+    name: labdesk-mcp-server
