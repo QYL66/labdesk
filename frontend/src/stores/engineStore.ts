@@ -1,6 +1,9 @@
+// Modified for LabDesk.
 import { create } from "zustand";
 
+import { getAgentMeta } from "@/services/agentService";
 import { getSystemSettings } from "@/services/settingsService";
+import { useAuthStore } from "@/stores/authStore";
 
 export type EngineType = "workflow" | "agent";
 
@@ -18,9 +21,14 @@ export const useEngineStore = create<EngineState>((set, get) => ({
     if (get().engineType || get().loading) return;
     set({ loading: true });
     try {
-      const settings = await getSystemSettings();
-      const type = settings.engine?.type?.toLowerCase();
-      set({ engineType: type === "agent" ? "agent" : "workflow", loading: false });
+      if (useAuthStore.getState().user?.role === "admin") {
+        const settings = await getSystemSettings();
+        const type = settings.engine?.type?.toLowerCase();
+        set({ engineType: type === "agent" ? "agent" : "workflow", loading: false });
+      } else {
+        await getAgentMeta();
+        set({ engineType: "agent", loading: false });
+      }
     } catch (error) {
       console.warn("获取引擎类型失败，回退 workflow", error);
       set({ engineType: "workflow", loading: false });

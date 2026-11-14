@@ -64,7 +64,7 @@ function groupSessions(sessions: AgentSession[]): SessionGroup[] {
     .map(([label, items]) => ({ label, items }));
 }
 
-export function AgentSidebar() {
+export function AgentSidebar({ onNavigate }: { onNavigate: () => void }) {
   const {
     sessions,
     currentSessionId,
@@ -133,6 +133,7 @@ export function AgentSidebar() {
     if (sessionId === currentSessionId) return;
     loadMessages(sessionId).catch(() => null);
     navigate(`/chat/${sessionId}`);
+    onNavigate();
   };
 
   const startRename = (session: AgentSession) => {
@@ -175,7 +176,7 @@ export function AgentSidebar() {
   const groups = groupSessions(shown);
 
   return (
-    <aside className="agent-rail">
+    <aside className="agent-rail" id="lab-workbench-sidebar" aria-label="会话与账户">
       {/* 栏首：主动作卡本身就是卡 外面不再套一层「快速开始」壳 顶栏字标就在正上方 */}
       <div className="agent-quick">
         <button
@@ -185,6 +186,7 @@ export function AgentSidebar() {
             exitSelect();
             startNewChat();
             navigate("/chat");
+            onNavigate();
           }}
         >
           <span className="agent-new-icon" aria-hidden="true">
@@ -192,7 +194,6 @@ export function AgentSidebar() {
           </span>
           <span className="agent-new-text">
             <span className="agent-new-title">新建会话</span>
-            <span className="agent-new-sub">从空白开始</span>
           </span>
         </button>
         {user?.role === "admin" ? (

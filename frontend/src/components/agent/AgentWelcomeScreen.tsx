@@ -1,5 +1,7 @@
 // Modified for LabDesk.
 import * as React from "react";
+import { ArrowDownLeft, ArrowUpRight, BookOpen, CalendarDays, ClipboardList } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { listSampleQuestions } from "@/services/sampleQuestionService";
 import { useAgentChatStore } from "@/stores/agentChatStore";
@@ -63,8 +65,8 @@ function AgentSampleQuestions() {
   const isBlank = questions.length === 0;
 
   return (
-    <section className="agent-empty-try">
-      <span className="agent-empty-try-label">试试这些</span>
+    <section className="lab-example" aria-label="示例问题">
+      <h2>示例问题</h2>
       {isBlank ? (
         <div className="agent-empty-blank">
           {state.status === "error" ? (
@@ -96,16 +98,17 @@ function AgentSampleQuestions() {
           ) : null}
         </div>
       ) : (
-        <div className="agent-empty-chips">
+        <div className="lab-example-list">
           {questions.map((question) => (
             <button
               key={question}
               type="button"
-              className="agent-empty-chip"
+              className="lab-example-button"
               title="点击填入输入框"
               onClick={() => setDraft(question)}
             >
               <span>{question}</span>
+              <ArrowDownLeft size={15} aria-hidden="true" />
             </button>
           ))}
         </div>
@@ -115,17 +118,37 @@ function AgentSampleQuestions() {
 }
 
 export function AgentWelcomeScreen() {
+  const setDraft = useAgentChatStore((store) => store.setDraft);
+
   return (
     <div className="agent-stream-empty">
-      <div className="agent-empty-wrap">
-        <div className="agent-empty-card">
-          <div className="px-6 pb-4 pt-6">
-            <h1 className="text-2xl font-semibold">实验室规程与设备预约</h1>
-            <p className="mt-2 text-sm text-slate-600">查阅实验室资料、查询设备空闲时段，或确认后提交预约。</p>
+      <section className="lab-workbench" aria-labelledby="lab-workbench-title">
+        <div className="lab-workbench-hero">
+          <div className="lab-hero-copy">
+            <h1 id="lab-workbench-title" className="lab-title">实验室工作台</h1>
+            <p className="lab-lede">查阅实验室资料，查看设备空闲时段，确认后提交预约。</p>
           </div>
-          <AgentSampleQuestions />
+          <div className="lab-hero-photo" aria-hidden="true" />
         </div>
-      </div>
+        <nav className="lab-workbench-actions" aria-label="实验室常用操作">
+          <Link to="/knowledge" className="lab-action">
+            <BookOpen size={19} aria-hidden="true" />
+            <span>资料问答</span>
+            <ArrowUpRight size={15} aria-hidden="true" />
+          </Link>
+          <button type="button" className="lab-action" onClick={() => setDraft("明天有哪些设备可以预约？")}>
+            <CalendarDays size={19} aria-hidden="true" />
+            <span>查询空闲时段</span>
+            <ArrowDownLeft size={15} aria-hidden="true" />
+          </button>
+          <button type="button" className="lab-action" onClick={() => setDraft("查一下我有哪些设备预约。")}>
+            <ClipboardList size={19} aria-hidden="true" />
+            <span>查询我的预约</span>
+            <ArrowDownLeft size={15} aria-hidden="true" />
+          </button>
+        </nav>
+        <AgentSampleQuestions />
+      </section>
     </div>
   );
 }

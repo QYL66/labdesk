@@ -1,6 +1,6 @@
 // Modified for LabDesk.
 import * as React from "react";
-import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, FlaskConical, Lock, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -30,18 +30,17 @@ export function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-blue-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900" />
-      <div className="relative z-10 w-full max-w-md rounded-3xl border border-border/70 bg-background/80 p-8 shadow-soft backdrop-blur">
-        <div className="mb-6">
-          <h1 className="font-display text-2xl font-semibold">LabDesk 实验室助手</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+    <main className="lab-login">
+      <section className="lab-login-panel" aria-labelledby="lab-login-title">
+        <div className="lab-brand"><FlaskConical size={19} aria-hidden="true" /> LabDesk</div>
+        <div className="lab-login-form">
+          <h1 id="lab-login-title" className="lab-title">实验室工作台</h1>
+          <p className="lab-lede">
             查询实验室规程、设备空闲时段和个人预约。
           </p>
-        </div>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label htmlFor="labdesk-username" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <label htmlFor="labdesk-username" className="lab-field-label">
               用户名
             </label>
             <div className="relative">
@@ -57,7 +56,7 @@ export function LoginPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <label htmlFor="labdesk-password" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <label htmlFor="labdesk-password" className="lab-field-label">
               密码
             </label>
             <div className="relative">
@@ -75,18 +74,21 @@ export function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                aria-label="显示或隐藏密码"
+                aria-label={showPassword ? "隐藏密码" : "显示密码"}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "正在登录..." : "登录"}
+          {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+          <Button type="submit" className="lab-login-submit" disabled={isLoading}>
+            {isLoading ? "正在登录…" : "登录工作台"}
+            {!isLoading ? <ArrowRight size={17} aria-hidden="true" /> : null}
           </Button>
         </form>
-      </div>
-    </div>
+        </div>
+      </section>
+      <div className="lab-login-photo" aria-hidden="true" />
+    </main>
   );
 }

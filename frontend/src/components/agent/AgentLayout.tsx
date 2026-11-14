@@ -1,5 +1,6 @@
 // Modified for LabDesk.
 import * as React from "react";
+import { BookOpen, FlaskConical, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { AgentRawLog } from "@/components/agent/AgentRawLog";
@@ -39,16 +40,28 @@ interface AgentHeaderProps {
   meta: AgentMetaState;
   rawOpen: boolean;
   onToggleRaw: () => void;
+  railOpen: boolean;
+  onToggleRail: () => void;
 }
 
-function AgentHeader({ meta, rawOpen, onToggleRaw }: AgentHeaderProps) {
-
+function AgentHeader({ meta, rawOpen, onToggleRaw, railOpen, onToggleRail }: AgentHeaderProps) {
   const badgeName =
     meta.status === "online" ? meta.meta.framework : meta.status === "probing" ? "探测中" : "离线";
 
   return (
     <header className="agent-header">
       <div className="agent-brand">
+        <button
+          type="button"
+          className="agent-head-btn lab-rail-toggle"
+          aria-label="会话侧栏"
+          aria-expanded={railOpen}
+          aria-controls="lab-workbench-sidebar"
+          onClick={onToggleRail}
+        >
+          <Menu size={20} aria-hidden="true" />
+        </button>
+        <FlaskConical size={18} className="lab-brand-icon" aria-hidden="true" />
         <span className="agent-wordmark">LabDesk</span>
         <span className="agent-brand-sep">/</span>
         <span className="agent-brand-tag">实验室助手</span>
@@ -70,7 +83,9 @@ function AgentHeader({ meta, rawOpen, onToggleRaw }: AgentHeaderProps) {
       </div>
 
       <div className="agent-header-right">
-        <Link to="/knowledge" className="agent-head-btn">资料问答</Link>
+        <Link to="/knowledge" className="agent-head-btn lab-knowledge-link">
+          <BookOpen size={15} aria-hidden="true" /> 资料问答
+        </Link>
         <button
           type="button"
           className="agent-head-btn"
@@ -91,13 +106,15 @@ interface AgentLayoutProps {
 
 export function AgentLayout({ children }: AgentLayoutProps) {
   const [rawOpen, setRawOpen] = React.useState(false);
+  const [railOpen, setRailOpen] = React.useState(false);
   const meta = useAgentMeta();
 
   return (
-    <div className="agent-app">
-      <AgentHeader meta={meta} rawOpen={rawOpen} onToggleRaw={() => setRawOpen((v) => !v)} />
+    <div className="agent-app" data-rail-open={railOpen}>
+      <AgentHeader meta={meta} rawOpen={rawOpen} onToggleRaw={() => setRawOpen((v) => !v)}
+        railOpen={railOpen} onToggleRail={() => setRailOpen((open) => !open)} />
       <div className="agent-body">
-        <AgentSidebar />
+        <AgentSidebar onNavigate={() => setRailOpen(false)} />
         <main className="agent-main">{children}</main>
         {rawOpen ? <AgentRawLog onClose={() => setRawOpen(false)} /> : null}
       </div>
