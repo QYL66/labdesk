@@ -31,6 +31,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File local/Verify-LabDeskMcp.
 
 此检查使用两个临时测试账户 ID，验证工具目录、身份来源、非法输入、两人抢占、同人重试、预约查询隔离及 PostgreSQL 记录数。脚本用完清理本次测试账户的预约。界面确认和重启后查询使用上面的演示步骤。
 
+## 自动测试
+
+在项目根目录运行 `mvn.cmd test`。默认执行无需单独配置外部服务的测试，包含通过本机回环端口运行的 MCP 协议测试。
+
+RAG 的独立联调用例需要为各测试准备数据库、模型或 Milvus。配置好对应环境后，可以用 `mvn.cmd -pl rag -am "-Dtest=<测试类>" "-Dsurefire.failIfNoSpecifiedTests=false" "-Drag.test.live=true" test` 单独运行。发票解析集成测试使用 `-Drag.test.invoice-document=<样例文档路径>` 启用。
+
 ## 简历描述参考
 
 **LabDesk 校内实验室知识与设备预约助手** · Java、Spring Boot、React、PostgreSQL/pgvector、MCP、Docker Compose

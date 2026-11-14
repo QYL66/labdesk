@@ -18,9 +18,11 @@
 package com.nageoffer.ai.ragent;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(properties = "ragent.engine.type=workflow")
+@EnabledIfSystemProperty(named = "rag.test.live", matches = "true")
 class RagentCoreApplicationTests {
 
     @Test

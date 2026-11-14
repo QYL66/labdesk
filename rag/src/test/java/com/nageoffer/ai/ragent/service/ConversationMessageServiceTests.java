@@ -24,13 +24,15 @@ import com.nageoffer.ai.ragent.rag.service.ConversationMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
 @Slf4j
-@SpringBootTest
+@SpringBootTest(properties = "ragent.engine.type=workflow")
+@EnabledIfSystemProperty(named = "rag.test.live", matches = "true")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ConversationMessageServiceTests {
 

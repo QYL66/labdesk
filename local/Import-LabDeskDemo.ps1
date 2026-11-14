@@ -14,7 +14,9 @@ function Call-Api([string]$method, [string]$path, $body = $null, [hashtable]$hea
         $options.ContentType = 'application/json; charset=utf-8'
         $options.Body = [Text.Encoding]::UTF8.GetBytes(($body | ConvertTo-Json -Compress -Depth 10))
     }
-    Unwrap (Invoke-RestMethod @options) "$method $path"
+    $response = Invoke-WebRequest @options -UseBasicParsing
+    $json = [Text.Encoding]::UTF8.GetString($response.RawContentStream.ToArray())
+    Unwrap ($json | ConvertFrom-Json) "$method $path"
 }
 
 function Upload-DemoDocument([System.IO.FileInfo]$file, [string]$kbId, [string]$token) {

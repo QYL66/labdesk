@@ -151,7 +151,7 @@ class SystemSettingsControllerTest {
             String json = new ObjectMapper().writeValueAsString(result);
             assertThat(json).doesNotContain("credential", "publicKey", "secretKey", "private-observer",
                     "sk-test-sensitive-provider-key");
-            assertThat(result.getAi().getProviders().get("test").getApiKey()).isEqualTo("sk-tes***-key");
+            assertThat(result.getAi().getProviders().get("test").getApiKey()).isEqualTo("******");
         });
     }
 }

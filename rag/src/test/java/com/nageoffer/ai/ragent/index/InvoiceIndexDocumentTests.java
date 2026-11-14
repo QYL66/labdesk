@@ -36,6 +36,7 @@ import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.StringUtils;
@@ -51,7 +52,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
-@SpringBootTest
+@SpringBootTest(properties = "ragent.engine.type=workflow")
+@EnabledIfSystemProperty(named = "rag.test.invoice-document", matches = ".+")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class InvoiceIndexDocumentTests {
 
@@ -65,7 +67,7 @@ public class InvoiceIndexDocumentTests {
 
     @Test
     void indexDocument() throws TikaException, IOException {
-        String filePath = "src/main/resources/file/group/group-finance/开票信息.md";
+        String filePath = System.getProperty("rag.test.invoice-document");
         String actualDocument = extractText(filePath);
         System.out.println(actualDocument);
         List<String> chunks = splitIntoLineChunks(actualDocument, 5);

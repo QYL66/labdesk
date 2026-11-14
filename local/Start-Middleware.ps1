@@ -3,6 +3,16 @@
 Initialize-LocalCredentials
 Invoke-LabDeskCompose up -d --pull never --wait --wait-timeout 130
 
+$existingTopics = Invoke-LabDeskCompose exec -T rmqbroker sh mqadmin topicList -n rmqnamesrv:9876
+foreach ($topic in @('knowledge-document-chunk_topic','knowledge-base-cleanup_topic','message-feedback_topic')) {
+    if ($topic -notin $existingTopics) {
+        $created = Invoke-LabDeskCompose exec -T rmqbroker sh mqadmin updateTopic -n rmqnamesrv:9876 -b 127.0.0.1:10911 -t $topic
+        if (($created -join "`n") -notmatch 'create topic .* success') {
+            throw "RocketMQ topic initialization failed for $topic."
+        }
+    }
+}
+
 $s3Ready = $false
 for ($attempt = 0; $attempt -lt 35; $attempt++) {
     & curl.exe --silent --fail --max-time 3 --output NUL 'http://127.0.0.1:9000/health'
