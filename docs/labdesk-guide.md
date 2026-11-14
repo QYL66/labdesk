@@ -1,6 +1,8 @@
-# LabDesk 源码导读
+# LabDesk 开发与调试指南
 
 用 IDEA 打开根目录的 Maven 项目。下文的 `类名#方法名` 表示推荐打断点的位置。用两条 Java 进程分别跟后端和 MCP。需要单步调试时，先停止脚本拉起的同端口进程，再通过 IDEA 启动对应进程。
+
+LabDesk 负责实验室页面、业务提示词、设备与预约表以及设备 MCP 工具。通用 Agent 负责工具编排、请求确认、会话身份传递和 SSE。通用 RAG 负责解析、检索、生成与来源组装。预约参数校验、账户隔离和并发写入由 LabDesk 的预约服务处理。
 
 ## 1. 从上传 Markdown 到向量入库
 
@@ -18,7 +20,7 @@
 
 ## 2. 从提问到可打开的来源
 
-在前端点击「资料问答」。路由 `/knowledge` 使用 `ChatPage.tsx`，向 `GET /api/ragent/rag/v3/chat` 发起 SSE 请求。
+在前端点击「资料问答」。路由 `/knowledge` 使用 `ChatPage.tsx`，向 `GET /api/labdesk/rag/v3/chat` 发起 SSE 请求。
 
 | 断点 | 在这里看什么 |
 | --- | --- |
@@ -35,7 +37,7 @@ Agent 首页也可以用 `search_knowledge` 回答资料问题。演示可打开
 
 | 断点 | 在这里看什么 |
 | --- | --- |
-| `AgentChatController#chat` → `AgentChatServiceImpl#streamChat` | 对话调用 `GET /api/ragent/agent/v1/chat`。观察服务端当前用户 ID 和对话 ID。 |
+| `AgentChatController#chat` → `AgentChatServiceImpl#streamChat` | 对话调用 `GET /api/labdesk/agent/v1/chat`。观察服务端当前用户 ID 和对话 ID。 |
 | `ReActAgentProvider#getAgent` → `AgentToolCatalog#resolveMcpTools` | 核对 MCP 工具目录和配置。LabDesk 注册日期和三个设备工具，另外沿用 Agent 内置知识检索。 |
 | `McpToolProxy#checkPermissions` | 对照只读提示和预约工具的确认设置。预约返回待确认，前端渲染确认卡。 |
 | `AgentChatController#confirm` → `AgentChatServiceImpl#confirmPendingTool` | 确认按钮提交对话 ID、待确认消息 ID 和同意状态。拒绝后结束这次待确认调用。 |
@@ -48,4 +50,4 @@ Agent 首页也可以用 `search_knowledge` 回答资料问题。演示可打开
 
 查询空闲只代表查询当下。确认时用带唯一约束的 `INSERT … ON CONFLICT DO NOTHING` 竞争写入。随后单独执行一次 SELECT，读取已提交的预约。若账户一致，返回同一个编号。若另一账户已经占用，返回已预约。这样可以用相同输入安全重试，也能处理两个用户几乎同时确认的情况。
 
-主要新增代码在 `mcp-server/src/main/java/com/nageoffer/ai/ragent/mcp/lab/`，表结构与设备样例在 `mcp-server/src/main/resources/db/labdesk.sql`。部署参数、初始提示词和样例问题分别在 `local/` 与 `resources/database/labdesk_seed.sql`。
+主要新增代码在 `mcp-server/src/main/java/io/github/qyl66/labdesk/mcp/lab/`，表结构与设备样例在 `mcp-server/src/main/resources/db/labdesk.sql`。部署参数、初始提示词和样例问题分别在 `local/` 与 `resources/database/labdesk_seed.sql`。

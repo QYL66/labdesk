@@ -41,16 +41,33 @@ function Invoke-LabDeskCompose {
 function Initialize-LocalCredentials {
     if (-not (Test-Path -LiteralPath $EnvFile)) {
         @(
-            'RAGENT_PG_PASSWORD=' + [guid]::NewGuid().ToString('N')
-            'RAGENT_REDIS_PASSWORD=' + [guid]::NewGuid().ToString('N')
-            'RAGENT_S3_KEY=labdesk-local'
-            'RAGENT_S3_SECRET=' + [guid]::NewGuid().ToString('N')
+            'LABDESK_PG_PASSWORD=' + [guid]::NewGuid().ToString('N')
+            'LABDESK_REDIS_PASSWORD=' + [guid]::NewGuid().ToString('N')
+            'LABDESK_S3_KEY=labdesk-local'
+            'LABDESK_S3_SECRET=' + [guid]::NewGuid().ToString('N')
             'LABDESK_MCP_TOKEN=' + [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')
         ) | Set-Content -LiteralPath $EnvFile -Encoding ASCII
     }
+    $credentials = @{}
     foreach ($line in Get-Content -LiteralPath $EnvFile) {
-        if ($line -match '^(RAGENT_(?:PG_PASSWORD|REDIS_PASSWORD|S3_KEY|S3_SECRET)|LABDESK_MCP_TOKEN)=(.+)$') {
-            [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
+        if ($line -match '^((?:LABDESK|RAGENT)_(?:PG_PASSWORD|REDIS_PASSWORD|S3_KEY|S3_SECRET)|LABDESK_MCP_TOKEN)=(.+)$') {
+            $credentials[$Matches[1]] = $Matches[2]
         }
+    }
+    foreach ($suffix in @('PG_PASSWORD','REDIS_PASSWORD','S3_KEY','S3_SECRET')) {
+        $current = $credentials["LABDESK_$suffix"]
+        $legacy = $credentials["RAGENT_$suffix"]
+        if (-not $current) { $current = $legacy }
+        if (-not $current) { throw "Missing LABDESK_$suffix in the local credentials file." }
+        [Environment]::SetEnvironmentVariable("LABDESK_$suffix", $current, 'Process')
+    }
+    if (-not $credentials['LABDESK_MCP_TOKEN']) { throw 'Missing LABDESK_MCP_TOKEN in the local credentials file.' }
+    $env:LABDESK_MCP_TOKEN = $credentials['LABDESK_MCP_TOKEN']
+
+    # Keep persisted S3 URLs and pending RocketMQ transactions usable on pre-migration installations.
+    if ($credentials.ContainsKey('RAGENT_PG_PASSWORD')) {
+        if (-not $env:LABDESK_KB_BUCKET) { $env:LABDESK_KB_BUCKET = 'ragent-sources' }
+        if (-not $env:LABDESK_ASSET_BUCKET) { $env:LABDESK_ASSET_BUCKET = 'ragent-assets' }
+        if (-not $env:LABDESK_MQ_PRODUCER_GROUP) { $env:LABDESK_MQ_PRODUCER_GROUP = 'ragent-producer_pg' }
     }
 }

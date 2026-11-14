@@ -1,7 +1,7 @@
 param([string]$Username = 'admin')
 
 $ErrorActionPreference = 'Stop'
-$base = 'http://127.0.0.1:9090/api/ragent'
+$base = 'http://127.0.0.1:9090/api/labdesk'
 
 function Unwrap($result, [string]$action) {
     if ($result.code -ne '0') { throw "$action failed: $($result.message)" }

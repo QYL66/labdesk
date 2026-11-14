@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Modified for LabDesk: Maven coordinates. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.nageoffer.ai</groupId>
-        <artifactId>ragent</artifactId>
+        <groupId>io.github.qyl66.labdesk</groupId>
+        <artifactId>labdesk-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
     <!-- Agent 执行架构（v2 ReAct）：仅通过窄接口消费 rag 的检索门面与人设解析 -->
-    <artifactId>agent</artifactId>
+    <artifactId>labdesk-agent</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>com.nageoffer.ai</groupId>
-            <artifactId>rag</artifactId>
+            <groupId>io.github.qyl66.labdesk</groupId>
+            <artifactId>labdesk-rag</artifactId>
             <version>${project.version}</version>
         </dependency>
 

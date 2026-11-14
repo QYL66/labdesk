@@ -1,0 +1,65 @@
+[
+  {
+    "id": "reset-card",
+    "category": "有答案",
+    "question": "教学显微镜 SCOPE-01 归位后需要贴什么颜色的复位卡？请注明出处。",
+    "expected": "青绿色复位卡，出处为设备操作规程。",
+    "sources": [
+      "设备操作规程"
+    ],
+    "answerTokens": [
+      "青绿色"
+    ]
+  },
+  {
+    "id": "missing-serial",
+    "category": "无答案",
+    "question": "实验室资料是否记载 SCOPE-01 的出厂序列号？请给出原文依据。",
+    "expected": "资料没有记载，不应编造序列号。",
+    "sources": [],
+    "answerTokens": []
+  },
+  {
+    "id": "conflict-service",
+    "category": "资料冲突",
+    "question": "评测设备 EVAL-C1 的校准周期是多少？如果两份资料冲突，请分别列出并说明如何处理。",
+    "expected": "周检记录为每 7 天，保养手册为每 30 天。明确冲突并建议核对获批版本。",
+    "sources": [
+      "周检记录",
+      "保养手册"
+    ],
+    "answerTokens": [
+      "7",
+      "30"
+    ]
+  },
+  {
+    "id": "same-name",
+    "category": "同名设备",
+    "question": "A301 与 B301 都有名为数字测量台的设备。请分别给出房间、设备编号，以及归还时要做什么。",
+    "expected": "A301 EVAL-A1 拔下探头；B301 EVAL-B1 盖上防尘盖。",
+    "sources": [
+      "A301数字测量台",
+      "B301数字测量台"
+    ],
+    "answerTokens": [
+      "EVAL-A1",
+      "EVAL-B1",
+      "探头",
+      "防尘盖"
+    ]
+  },
+  {
+    "id": "source-hours",
+    "category": "来源核对",
+    "question": "最后一个可预约起始时间和结束时间各是多少？请引用设备预约规则。",
+    "expected": "17:00 开始、18:00 结束，来源为设备预约规则。",
+    "sources": [
+      "设备预约规则"
+    ],
+    "answerTokens": [
+      "17:00",
+      "18:00"
+    ]
+  }
+]

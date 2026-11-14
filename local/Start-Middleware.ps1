@@ -31,4 +31,8 @@ if (($schemaExists | Select-Object -Last 1) -eq '0') {
     Invoke-LabDeskCompose @dbArgs --single-transaction -f /tmp/labdesk-schema.sql -f /tmp/labdesk-initial-data.sql -f /tmp/labdesk-seed.sql | Out-Null
     Invoke-LabDeskCompose exec -T postgres rm /tmp/labdesk-schema.sql /tmp/labdesk-initial-data.sql /tmp/labdesk-seed.sql
 }
+$promptUpgrade = Join-Path $RepoDir 'resources\database\upgrades\labdesk\repair-builtin-persona.sql'
+Invoke-LabDeskCompose cp $promptUpgrade 'postgres:/tmp/labdesk-persona-upgrade.sql'
+Invoke-LabDeskCompose @dbArgs --single-transaction -f /tmp/labdesk-persona-upgrade.sql | Out-Null
+Invoke-LabDeskCompose exec -T postgres rm /tmp/labdesk-persona-upgrade.sql
 Invoke-LabDeskCompose @dbArgs -c "SELECT extversion AS pgvector_version FROM pg_extension WHERE extname='vector';"

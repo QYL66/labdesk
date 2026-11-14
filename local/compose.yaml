@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: labdesk
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${RAGENT_PG_PASSWORD:?Missing PostgreSQL password}
+      POSTGRES_PASSWORD: ${LABDESK_PG_PASSWORD:?Missing PostgreSQL password}
     ports: ["127.0.0.1:5432:5432"]
     volumes: ["postgres-data:/var/lib/postgresql/data"]
     healthcheck:
@@ -18,8 +18,8 @@ services:
   redis:
     image: redis:8.4-alpine
     environment:
-      REDISCLI_AUTH: ${RAGENT_REDIS_PASSWORD:?Missing Redis password}
-    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${RAGENT_REDIS_PASSWORD}"]
+      REDISCLI_AUTH: ${LABDESK_REDIS_PASSWORD:?Missing Redis password}
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${LABDESK_REDIS_PASSWORD}"]
     ports: ["127.0.0.1:16379:6379"]
     volumes: ["redis-data:/data"]
     healthcheck:
@@ -31,8 +31,8 @@ services:
   rustfs:
     image: rustfs/rustfs:1.0.0-alpha.72
     environment:
-      RUSTFS_ACCESS_KEY: ${RAGENT_S3_KEY:?Missing RustFS access key}
-      RUSTFS_SECRET_KEY: ${RAGENT_S3_SECRET:?Missing RustFS secret key}
+      RUSTFS_ACCESS_KEY: ${LABDESK_S3_KEY:?Missing RustFS access key}
+      RUSTFS_SECRET_KEY: ${LABDESK_S3_SECRET:?Missing RustFS secret key}
       RUSTFS_CONSOLE_ENABLE: 'true'
     command: ["--address", ":9000", "--console-enable", "/data"]
     ports: ["127.0.0.1:9000:9000", "127.0.0.1:9001:9001"]
@@ -60,10 +60,10 @@ services:
     environment:
       NAMESRV_ADDR: rmqnamesrv:9876
       JAVA_OPT_EXT: '-Xms512m -Xmx512m'
-    command: ["sh", "mqbroker", "-c", "/home/rocketmq/ragent-broker.properties"]
+    command: ["sh", "mqbroker", "-c", "/home/rocketmq/labdesk-broker.properties"]
     ports: ["127.0.0.1:10909:10909", "127.0.0.1:10911:10911"]
     volumes:
-      - ./rocketmq-broker.properties:/home/rocketmq/ragent-broker.properties:ro
+      - ./rocketmq-broker.properties:/home/rocketmq/labdesk-broker.properties:ro
       - rocketmq-data:/home/rocketmq/store
     healthcheck:
       test: ["CMD-SHELL", "grep -q 'boot success' /home/rocketmq/logs/rocketmqlogs/broker.log"]

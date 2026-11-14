@@ -4,6 +4,12 @@
 
 LabDesk 面向校内实验室。学生可以查设备操作规程和安全须知，从答案打开原文，也可以查设备空闲时段，在确认后提交预约。管理员可以上传资料、查看分块进度、管理成员和检查操作记录。
 
+### 项目工作
+
+- 将资料上传、向量入库、流式问答与引用预览串成实验室资料查询流程，配套编写可复现的样例和评测集。
+- 新增设备、预约数据库和三个 MCP 工具，接入通用 Agent 的人工确认。用数据库约束裁决并发，处理同一用户重复提交。
+- 整理 LabDesk 的工作台和 Windows 启停脚本，统一 Java 包名、制品和 API。通用 RAG、Agent、会话及工具确认框架来自既有底座，来源与许可见文末。
+
 [界面预览](#界面预览) · [核心功能](#核心功能) · [系统流程](#系统流程) · [本机启动](#本机启动) · [演示与验收](#演示与验收) · [目录结构](#目录结构)
 
 ## 界面预览
@@ -11,7 +17,7 @@ LabDesk 面向校内实验室。学生可以查设备操作规程和安全须知
 ![LabDesk 实验室工作台，包含资料问答、查询空闲时段和查询我的预约三个入口](docs/images/labdesk-workbench.webp)
 
 <details>
-<summary>查看登录与资料问答界面</summary>
+<summary>查看登录、带引用的资料问答与预约确认</summary>
 
 **登录页**
 
@@ -21,9 +27,13 @@ LabDesk 面向校内实验室。学生可以查设备操作规程和安全须知
 
 ![LabDesk 资料问答页面，提供设备操作规程、实验室安全须知和设备预约规则示例](docs/images/labdesk-knowledge.webp)
 
+**预约确认**
+
+![LabDesk 实际运行中生成的设备预约确认卡](docs/images/labdesk-booking.webp)
+
 </details>
 
-截图使用本地演示账户和模拟数据。
+截图采自本机运行中的 LabDesk。资料与设备使用虚构演示数据，问答引用与确认卡由实际请求生成。
 
 ## 核心功能
 
@@ -103,8 +113,11 @@ cd labdesk
 mvn.cmd -DskipTests package
 Push-Location frontend
 npm.cmd ci
+npm.cmd test
 Pop-Location
 ```
+
+Maven 生成 `bootstrap/target/labdesk-bootstrap-0.0.1-SNAPSHOT.jar` 和 `mcp-server/target/labdesk-mcp-server-0.0.1-SNAPSHOT.jar`。浏览器通过 Vite 代理访问 `/api/labdesk`。
 
 ### 3. 启动和登录
 
@@ -142,14 +155,14 @@ Pop-Location
 | 设备预约 | 从空闲列表选一个整点，发起预约并在卡片中确认。 | 获得预约编号，可在「查询我的预约」中找到。 |
 | 冲突与重试 | 用两个账号预约同一时段，或用同一账号重试。 | 另一账号收到已占用提示，同一账号重试返回原编号。 |
 
-[样例资料](resources/labdesk-demo) · [完整演示与验收步骤](docs/labdesk-demo.md)
+[样例资料](resources/labdesk-demo) · [完整演示与验收步骤](docs/labdesk-demo.md) · [固定问答评测](docs/evaluation/README.md) · [预约设计与旧数据升级](docs/labdesk-booking.md)
 
 ### 本机实测
 
 - **资料问答**。三份样例完成分块和向量入库。在线回答流式返回“青绿色复位卡”，打开引用可在《设备操作规程》中核对原文。
 - **设备预约**。真实 Agent 发出确认请求。拒绝后没有写入，确认后生成一条预约。重启 PostgreSQL 容器后，查询个人预约仍返回原编号。
 - **并发与重试**。两次并发 MCP 请求竞争同一时段时，数据库只保存一条记录。成功账户重试得到原编号，另一账户只能查询自己的预约。
-- **自动检查**。前后端构建、前端类型检查、38 项前端回归和 805 项后端测试通过。另有 24 项后端用例按条件跳过。PowerShell 和 Compose 配置验证通过。
+- **自动检查**。命名迁移后，从空输出目录构建成功。前端类型检查、38 项前端回归、805 项后端测试和 18 项 MCP 实测通过。另有 24 项后端用例按条件跳过。
 
 ## 目录结构
 
@@ -167,4 +180,4 @@ Pop-Location
 
 ## 开源许可
 
-[Apache-2.0](LICENSE)
+[Apache-2.0](LICENSE) · [第三方声明](OPEN_SOURCE.md)

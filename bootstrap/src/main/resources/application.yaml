@@ -3,11 +3,11 @@ server:
   address: 127.0.0.1
   port: 9090
   servlet:
-    context-path: /api/ragent
+    context-path: /api/labdesk
 
 spring:
   application:
-    name: ragent${unique-name:}-service
+    name: labdesk${unique-name:}-service
 
   servlet:
     multipart:
@@ -18,23 +18,23 @@ spring:
     driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     username: postgres
-    password: postgres
-    url: jdbc:postgresql://127.0.0.1:5432/ragent?client_encoding=UTF8
+    password: ${LABDESK_PG_PASSWORD:postgres}
+    url: jdbc:postgresql://127.0.0.1:5432/labdesk?client_encoding=UTF8
     hikari:
       connection-timeout: 5000
       idle-timeout: 600000
       max-lifetime: 1800000
       maximum-pool-size: 10
       minimum-idle: 5
-      pool-name: RagentHikariPool
+      pool-name: LabDeskHikariPool
 
   data:
     redis:
       host: 127.0.0.1
       port: 6379
-      password: 123456
+      password: ${LABDESK_REDIS_PASSWORD:}
 
-ragent:
+labdesk:
   engine:
     type: agent  # 执行架构档位，可选 workflow（v1 编排管线）/ agent（v2 ReAct 架构，RAG 管线降级为主 Agent 的一个 Tool）
   demo-mode: false
@@ -63,8 +63,8 @@ agent:
     enabled: false
     capture-content: true
     endpoint: http://localhost:3000/api/public/otel/v1/traces
-    public-key: pk-lf-ragent-local
-    secret-key: sk-lf-ragent-local
+    public-key: pk-lf-labdesk-local
+    secret-key: sk-lf-labdesk-local
     max-field-chars: 32768
     max-attribute-chars: 131072
     service-version:
@@ -73,12 +73,12 @@ agent:
 rag:
   storage:
     type: s3
-    kb-bucket: ragent-sources
-    asset-bucket: ragent-assets
+    kb-bucket: ${LABDESK_KB_BUCKET:labdesk-sources}
+    asset-bucket: ${LABDESK_ASSET_BUCKET:labdesk-assets}
     s3:
       endpoint: http://localhost:9000
-      access-key: rustfsadmin
-      secret-key: rustfsadmin
+      access-key: ${LABDESK_S3_KEY:rustfsadmin}
+      secret-key: ${LABDESK_S3_SECRET:rustfsadmin}
       region: us-east-1
       path-style: true
       public-url:
@@ -357,7 +357,7 @@ sa-token:
 rocketmq:
   name-server: 127.0.0.1:9876
   producer:
-    group: ragent-producer${unique-name:}_pg
+    group: ${LABDESK_MQ_PRODUCER_GROUP:labdesk-producer${unique-name:}_pg}
     send-message-timeout: 2000
 
 milvus:

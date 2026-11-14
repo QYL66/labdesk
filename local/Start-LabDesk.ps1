@@ -47,8 +47,8 @@ function Start-ManagedService([string]$Name, [string]$Executable, [string[]]$Arg
 
 $java = (Get-Command java.exe).Source
 $node = (Get-Command node.exe).Source
-$mcpJar = Join-Path $RepoDir 'mcp-server\target\mcp-server-0.0.1-SNAPSHOT.jar'
-$appJar = Join-Path $RepoDir 'bootstrap\target\bootstrap-0.0.1-SNAPSHOT.jar'
+$mcpJar = Join-Path $RepoDir 'mcp-server\target\labdesk-mcp-server-0.0.1-SNAPSHOT.jar'
+$appJar = Join-Path $RepoDir 'bootstrap\target\labdesk-bootstrap-0.0.1-SNAPSHOT.jar'
 $frontend = Join-Path $RepoDir 'frontend'
 $vite = Join-Path $frontend 'node_modules\vite\bin\vite.js'
 $viteConfig = Join-Path $SetupDir 'vite-local.mjs'
@@ -76,7 +76,7 @@ if (-not (Get-ManagedService 'labdesk')) {
         Read-LocalSecret 'DEEPSEEK_API_KEY' 'DeepSeek API key'
         Read-LocalSecret 'BAILIAN_API_KEY' 'Bailian API key'
         $config = '"--spring.config.additional-location=' + (Join-Path $SetupDir 'application-local.yaml') + '"'
-        Start-ManagedService 'labdesk' $java @('-Dfile.encoding=UTF-8','-Xmx1536m','-jar',('"' + $appJar + '"'),$config) $RepoDir 9090 '/api/ragent'
+        Start-ManagedService 'labdesk' $java @('-Dfile.encoding=UTF-8','-Xmx1536m','-jar',('"' + $appJar + '"'),$config) $RepoDir 9090 '/api/labdesk'
     } finally {
         [Environment]::SetEnvironmentVariable('DEEPSEEK_API_KEY', $null, 'Process')
         [Environment]::SetEnvironmentVariable('BAILIAN_API_KEY', $null, 'Process')

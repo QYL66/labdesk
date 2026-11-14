@@ -37,12 +37,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File local/Verify-LabDeskMcp.
 
 RAG 的独立联调用例需要为各测试准备数据库、模型或 Milvus。配置好对应环境后，可以用 `mvn.cmd -pl rag -am "-Dtest=<测试类>" "-Dsurefire.failIfNoSpecifiedTests=false" "-Drag.test.live=true" test` 单独运行。发票解析集成测试使用 `-Drag.test.invoice-document=<样例文档路径>` 启用。
 
-## 简历描述参考
+## 异常处理
 
-**LabDesk 校内实验室知识与设备预约助手** · Java、Spring Boot、React、PostgreSQL/pgvector、MCP、Docker Compose
-
-- 面向实验室场景组织设备规程、安全须知和预约规则，实现独立的资料问答入口，支持流式回答和引用原文预览。
-- 实现设备空闲查询、预约提交和个人预约查询三个 MCP 工具，接入写操作确认流程，并在服务端按登录身份访问预约数据。
-- 使用 PostgreSQL 唯一约束处理并发抢占，以同一用户、设备和时段识别重复提交，返回已有预约编号。
-
-演示前可顺着[源码导读](labdesk-guide.md)自己跑一遍，按已经实测且能解释的内容选取简历条目。
+- 分块失败时，在管理后台查看文档分块日志并重试导入。重试会复用已有文档。
+- 确认后连接中断时，先查看历史会话，再用「查询我的预约」核对数据库结果。
+- 需要定位代码时，按[开发与调试指南](labdesk-guide.md)在后端和 MCP 进程设置断点。预约异常及竞态见[预约设计记录](labdesk-booking.md)。

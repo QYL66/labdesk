@@ -49,7 +49,7 @@ Assert-LabDesk (($catalog.tools | Where-Object name -eq 'lab_book_equipment').an
 
 function Call-Tool([string]$name, [hashtable]$toolArguments, [string]$user = '') {
     $parameters = @{ name = $name; arguments = $toolArguments }
-    if ($user) { $parameters['_meta'] = @{ 'com.nageoffer.ragent/userId' = $user } }
+    if ($user) { $parameters['_meta'] = @{ 'io.github.qyl66.labdesk/userId' = $user } }
     Convert-McpResponse (Send-Mcp 'tools/call' 3 $parameters)
 }
 
@@ -66,6 +66,11 @@ $cleanup = "DELETE FROM labdesk_booking WHERE user_id IN ('$user', '$otherUser')
 
 try {
     Assert-LabDesk ((Call-Tool 'lab_book_equipment' $slot).isError) 'booking without user metadata is rejected'
+    $unknown = @{ equipmentCode = 'LAB-UNKNOWN'; date = $date; startTime = $startTime }
+    Assert-LabDesk ((Call-Tool 'lab_list_availability' @{ equipmentCode = $unknown.equipmentCode; date = $date }).isError) 'availability rejects an unknown device'
+    Assert-LabDesk ((Call-Tool 'lab_book_equipment' $unknown $user).isError) 'booking rejects an unknown device'
+    Assert-LabDesk ((Call-Tool 'lab_book_equipment' @{ equipmentCode = 'SCOPE-01'; date = $date; startTime = '08:00' } $user).isError) 'a slot before opening is rejected'
+    Assert-LabDesk ((Call-Tool 'lab_book_equipment' @{ equipmentCode = 'SCOPE-01'; date = $date; startTime = '18:00' } $user).isError) 'a slot after the last start time is rejected'
     Assert-LabDesk ((Call-Tool 'lab_book_equipment' @{ equipmentCode = 'SCOPE-01'; date = $date; startTime = '17:30' } $user).isError) 'non-hourly slot is rejected'
     Assert-LabDesk ((Call-Tool 'lab_book_equipment' @{ equipmentCode = 'SCOPE-01'; date = $today.AddDays(-1).ToString('yyyy-MM-dd'); startTime = '17:00' } $user).isError) 'past slot is rejected'
 
@@ -74,7 +79,7 @@ try {
         $gate = [DateTime]::UtcNow.AddSeconds(5)
         foreach ($who in @($user, $otherUser)) {
             $body = @{ jsonrpc = '2.0'; id = $who; method = 'tools/call'; params = @{
-                name = 'lab_book_equipment'; arguments = $slot; '_meta' = @{ 'com.nageoffer.ragent/userId' = $who }
+                name = 'lab_book_equipment'; arguments = $slot; '_meta' = @{ 'io.github.qyl66.labdesk/userId' = $who }
             } } | ConvertTo-Json -Depth 8 -Compress
             $jobs += Start-Job -ArgumentList $endpoint,$headers,$body,$who,$gate -ScriptBlock {
                 param($url,$h,$request,$caller,$start)

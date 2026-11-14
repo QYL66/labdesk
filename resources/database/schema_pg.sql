@@ -1,4 +1,4 @@
--- PostgreSQL Schema for Ragent
+-- Modified for LabDesk. PostgreSQL schema.
 -- Converted from MySQL schema_table.sql
 
 -- Enable pgvector extension

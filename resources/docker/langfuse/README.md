@@ -8,7 +8,7 @@
 docker compose -f langfuse-stack-v4.compose.yaml up -d
 ```
 
-六个容器全部 healthy 后，浏览器打开 <http://localhost:3000>，用本机演示账号 `admin@example.invalid` / `admintrace` 登录，项目 `ragent-service` 已经建好。本说明已更新演示账号。
+六个容器全部 healthy 后，浏览器打开 <http://localhost:3000>，用本机演示账号 `admin@example.invalid` / `admintrace` 登录，项目 `labdesk-service` 已经建好。本说明已更新演示账号。
 
 ## 组件与端口
 
@@ -40,8 +40,8 @@ lsof -i :9090 -i :9099 -i :5432 -i :6379 -i :9000 -i :9001
 
 ```bash
 AGENT_TRACE_ENABLED=true \
-RAGENT_ENGINE_TYPE=agent \
-java -jar bootstrap/target/ragent.jar
+LABDESK_ENGINE_TYPE=agent \
+java -jar bootstrap/target/labdesk-bootstrap-0.0.1-SNAPSHOT.jar
 ```
 
 此时 Input / Output 会随 trace 一起上报，无需再额外配置内容开关。环境变量在 Spring 的松散绑定里优先于配置文件，IDE Run Configuration 也遵循同一规则。
@@ -51,8 +51,8 @@ java -jar bootstrap/target/ragent.jar
 ```bash
 AGENT_TRACE_ENABLED=true \
 AGENT_TRACE_CAPTURE_CONTENT=false \
-RAGENT_ENGINE_TYPE=agent \
-java -jar bootstrap/target/ragent.jar
+LABDESK_ENGINE_TYPE=agent \
+java -jar bootstrap/target/labdesk-bootstrap-0.0.1-SNAPSHOT.jar
 ```
 
 四层节点仍会成树，只是 Input / Output 不记录业务内容。

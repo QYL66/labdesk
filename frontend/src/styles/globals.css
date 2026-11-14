@@ -3536,7 +3536,7 @@ textarea {
    全部 token 挂 .agent-app 域不进 :root；组件类一律 .agent-app 域内生效，与 .admin-layout 的 agent-* 类互不越界 */
 
 .agent-app {
-  /* 色板：暖中性纸 + 单一橙信号（Claude 橙）
+  /* 色板：暖中性纸 + 单一橙信号
      中性一族统一走 40° 上下的极低饱和暖灰 橙只留给信号 两族不混 */
   --agent-paper: #faf9f5;
   --agent-paper-grid: #eeeae1;
@@ -3548,7 +3548,7 @@ textarea {
   --agent-grid: #e8e4da;
   --agent-grid-strong: #d7d2c6;
 
-  /* 橙一族（Claude 橙）：配额制不动 橙只属两件事——唯一的主动作（发送）与正在发生的事 装饰与信息一律走中性
+  /* 橙一族：配额制不动 橙只属两件事——唯一的主动作（发送）与正在发生的事 装饰与信息一律走中性
      两档不是深浅装饰：#d97757 是 Claude 本色 但白字只有 3.1:1（低于 AA 4.5——Claude 自己那枚钮里是箭头图标不是文字）
      凡要承载白字白勾 或当正文读的 一律走深一档 -ink（白字 5.1:1） */
   --agent-orange: #d97757;

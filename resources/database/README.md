@@ -12,6 +12,8 @@
 
 ## 增量升级
 
+`upgrades/labdesk/repair-builtin-persona.sql` 由本机启动脚本重复安全执行，只修复受影响的旧内置闲聊提示词。LabDesk 的旧数据兼容说明见[预约设计与故障处理](../../docs/labdesk-booking.md#已部署数据升级)。
+
 `upgrades/` 按正式发布版本划分目录，目录名是这批变更将随之发布的版本号。当前开发中的版本是 v2.0.0，新的数据库升级脚本统一放在 `upgrades/v2.0.0/`；`upgrades/v1.1.0/` 是上一版本的历史脚本
 
 目录内的脚本使用首次提交日期和变更含义命名：

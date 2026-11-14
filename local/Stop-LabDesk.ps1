@@ -10,4 +10,7 @@ foreach ($name in @('frontend','labdesk','mcp-server')) {
     $record = Join-Path $LogsDir "$name.process.json"
     if (Test-Path -LiteralPath $record) { Remove-Item -LiteralPath $record }
 }
-if (Test-Path -LiteralPath $EnvFile) { Invoke-LabDeskCompose stop }
+if (Test-Path -LiteralPath $EnvFile) {
+    Initialize-LocalCredentials
+    Invoke-LabDeskCompose stop
+}

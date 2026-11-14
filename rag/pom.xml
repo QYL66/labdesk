@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Modified for LabDesk: Maven coordinates. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.nageoffer.ai</groupId>
-        <artifactId>ragent</artifactId>
+        <groupId>io.github.qyl66.labdesk</groupId>
+        <artifactId>labdesk-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>rag</artifactId>
+    <artifactId>labdesk-rag</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>com.nageoffer.ai</groupId>
-            <artifactId>framework</artifactId>
+            <groupId>io.github.qyl66.labdesk</groupId>
+            <artifactId>labdesk-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.nageoffer.ai</groupId>
-            <artifactId>system</artifactId>
+            <groupId>io.github.qyl66.labdesk</groupId>
+            <artifactId>labdesk-system</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.nageoffer.ai</groupId>
-            <artifactId>infra-ai</artifactId>
+            <groupId>io.github.qyl66.labdesk</groupId>
+            <artifactId>labdesk-infra-ai</artifactId>
             <version>${project.version}</version>
         </dependency>
 
